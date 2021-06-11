@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #app {
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid rgba(0, 0, 0, .5);
+      align-items: center;
+    }
+
+    #app span {
+      display: inline-block;
+      width: 40px;
+      height: 100px;
+      line-height: 100px;
+      text-align: center;
+      background-color: rgba(0, 0, 0, .3);
+      cursor: pointer;/*鼠标移入按钮显示手型*/
+      user-select:none;/*取消双击文本选中*/
+    }
+
+    .imgBox {
+      width: 1000px;
+      height: 300px;
+      position: relative;
+      background-color: #fff;
+      border: 1px dotted rgba(0, 0, 0, .5);
+      border-top:none;
+      border-bottom: none;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    @keyframes toLeftSmall {
+      /*中间的图片往左变小动画*/
+      from {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 220px;
+        z-index: 5;
+      }
+
+      to {
+        left: 5%;
+        transform: translate(0, -50%);
+        height: 160px;
+        z-index: 3;
+      }
+    }
+
+    @keyframes toLeftBig {
+      /*右边的图片往左变大动画*/
+      from {
+        right: 5%;
+        transform: translate(0, -50%);
+        height: 160px;
+        z-index: 3;
+      }
+
+      to {
+        right: 50%;
+        transform: translate(50%, -50%);
+        height: 220px;
+        z-index: 5;
+      }
+    }
+
+    @keyframes toRightBig {
+      /*左边的图片向右往中间后方变大并模糊动画*/
+      from {
+        left: 5%;
+        transform: translate(0, -50%);
+        z-index: 3;
+        height: 160px;
+        filter: blur(0px);
+      }
+
+      to {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        height: 220px;
+        filter: blur(20px);
+      }
+    }
+
+    @keyframes toRightSmall {
+      /*中间后方的图片往右变小动画*/
+      from {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 220px;
+        z-index: 1;
+        filter: blur(30px);
+      }
+
+      to {
+        left: 95%;
+        transform: translate(-100%, -50%);
+        height: 160px;
+        z-index: 3;
+        filter: blur(0px);
+      }
+    }
+
+    .firstImg {
+      /*第一张图片（左）*/
+      height: 160px;
+      left: 5%;
+      top: 50%;
+      transform: translate(0, -50%);
+      z-index: 3;
+      position: absolute;
+      filter: blur(0px);
+    }
+    .secondImg {
+      /*第二张图片（中间顶层）*/
+      height: 220px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      position: absolute;
+    }
+
+    .thirdImg {
+      /*第三张图片（右）*/
+      height: 160px;
+      right: 5%;
+      top: 50%;
+      transform: translate(0, -50%);
+      z-index: 3;
+      position: absolute;
+      filter: blur(0px);
+    }
+
+    .forthImg {
+      /*第四张图片（中间底层）*/
+      height: 220px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      position: absolute;
+      filter: blur(30px);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <!-- 左按钮 -->
+    <span id="leftBtn">&lt</span>
+    <div class="imgBox">
+      <!-- 轮播图区域 -->
+      <img src="./img/1.jpg" alt="" class="firstImg">
+      <img src="./img/2.jpg" alt="" class="secondImg">
+      <img src="./img/3.jpg" alt="" class="thirdImg">
+      <img src="./img/4.jpg" alt="" class="forthImg">
+    </div>
+    <!-- 右按钮 -->
+    <span id="rightBtn">&gt</span>
+  </div>
+  <script>
+    //节流函数
+    function throttle(fn, wait) {
+      var timer = null;
+      return function () {
+        var context = this;
+        var args = arguments;
+        if (!timer) {
+          timer = setTimeout(function () {
+            fn.apply(context, args);
+            timer = null;
+          }, wait)
+        }
+      }
+    }
+    window.onload = function () {
+      const imgList = ['./img/i1.jpg'];
+      //处在背后的第四张图片内容可以从该数组中切换图片内容
+      //数组中放即将展示的图片
+      let a = 0, b = 1, c = 2, d = 3;
+      let imgI = 0;
+      //获取当前img标签的所有图片数组
+      const img = document.getElementsByTagName('img');
+      //获取按钮对象
+      const btn1 = document.getElementById('leftBtn');
+      const btn2 = document.getElementById('rightBtn');
+      // 轮播图片函数
+      function changeImg() {
+        anmateDelay = 0.5; // 动画播放的时间
+
+        //给不同位置的图片添加对应动画
+        img[a].style.animation = 'toRightBig ' + anmateDelay + 's';
+        img[b].style.animation = 'toLeftSmall ' + anmateDelay + 's';
+        img[c].style.animation = 'toLeftBig ' + anmateDelay + 's';
+        img[d].style.animation = 'toRightSmall ' + anmateDelay + 's';
+        
+        setTimeout(() => {
+          //动画播放完成后将动画结束的各图片类名进行修改，使得动画移动位置后的图片可以固定在移动后的位置
+          img[a].className = 'forthImg'
+          img[b].className = 'firstImg';
+          img[c].className = 'secondImg';
+          img[d].className = 'thirdImg';
+          //清除动画，使得下一次可以正确的添加动画
+          img[a].style.animation = '';
+          img[b].style.animation = '';
+          img[c].style.animation = '';
+          img[d].style.animation = '';
+          if(imgI < imgList.length) {
+            img[a].src = imgList[imgI];
+            imgI++;
+          }
+          //图片循环
+          a++; b++; c++; d++;
+          if (a > 3) {
+            a = 0;
+          }
+          if (b > 3) {
+            b = 0;
+          }
+          if (c > 3) {
+            c = 0;
+          }
+          if (d > 3) {
+            d = 0;
+          }
+        }, anmateDelay * 1000);
+      }
+      let timer = setInterval(changeImg,4000);//调用轮播函数
+      btn2.addEventListener('click', throttle(changeImg, 500))//添加按钮事件监听
+    }
+  </script>
+</body>
+
+</html>
